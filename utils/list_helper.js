@@ -9,4 +9,18 @@ const totalLikes = (blogs) => {
   return blogs.length === 0 ? 0 : blogs.reduce(reducer, 0);
 };
 
-module.exports = { dummy, totalLikes };
+const omit = (obj, ...props) => {
+  const result = { ...obj };
+  props.forEach((prop) => {
+    delete result[prop];
+  });
+  return result;
+};
+const favoriteBlog = (blogs) => {
+  let num = Math.max(...blogs.map((blog) => blog.likes));
+  let filteredBlog = blogs.filter((blog) => blog.likes === num);
+  let setBlog = omit(filteredBlog[0], "_id", "url", "__v");
+  return setBlog;
+};
+
+module.exports = { dummy, totalLikes, favoriteBlog };
