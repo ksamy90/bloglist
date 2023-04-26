@@ -1,7 +1,5 @@
-const { favoriteBlog } = require("../utils/list_helper");
-
+const { favoriteBlog, mostBlogs, mostLikes } = require("../utils/list_helper");
 const likesTotal = require("../utils/list_helper").totalLikes;
-const favorite = require("../utils/list_helper").favoriteBlog;
 
 describe("total likes", () => {
   test("of empty list is zero", () => {
@@ -136,6 +134,35 @@ describe("favorite blog", () => {
       title: "Canonical string reduction",
       author: "Edsger W. Dijkstra",
       likes: 12,
+    });
+  });
+
+  const authors = [
+    {
+      author: "Robert C. Martin",
+      blogs: 3,
+      likes: 47,
+    },
+    {
+      author: "Jeffrey way",
+      blogs: 15,
+      likes: 23,
+    },
+  ];
+
+  test("author with highest number of blogs", () => {
+    const result = mostBlogs(authors);
+    expect(result).toEqual({
+      author: "Jeffrey way",
+      blogs: 15,
+    });
+  });
+
+  test("author with highest number of likes", () => {
+    const result = mostLikes(authors);
+    expect(result).toEqual({
+      author: "Robert C. Martin",
+      likes: 47,
     });
   });
 });
