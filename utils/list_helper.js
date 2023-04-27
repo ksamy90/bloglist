@@ -32,9 +32,9 @@ const mostBlogs = (blogs) => {
 
 const mostLikes = (blogs) => {
   let num = Math.max(...blogs.map((blog) => blog.likes));
-  let filteredBlog = blogs.filter((blog) => blog.likes === num);
-  let setBlog = omit(filteredBlog[0], "blogs");
-  return setBlog;
+  let filteredLikes = blogs.filter((blog) => blog.likes === num);
+  let setLikes = omit(filteredLikes[0], "blogs");
+  return setLikes;
 };
 
 module.exports = { dummy, totalLikes, favoriteBlog, mostBlogs, mostLikes };
