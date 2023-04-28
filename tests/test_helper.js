@@ -20,4 +20,14 @@ const blogsInDb = async () => {
   return blogs.map((blog) => blog.toJSON());
 };
 
+// const existingId = async () => {
+//   const blog = new Blog({
+//     title:"designing interiors",
+//     author:"samson omondi",
+//     url:"www.samson.com",
+//     likes:45})
+//   await blog.save()
+//   return blog._id.toString()
+// }
+
 module.exports = { initialBlogs, blogsInDb };

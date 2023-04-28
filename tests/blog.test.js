@@ -181,69 +181,102 @@ describe("favorite blog", () => {
   });
 });
 
-test("blogs are returned as json", async () => {
-  await api
-    .get("/api/blogs")
-    .expect(200)
-    .expect("Content-Type", /application\/json/);
-}, 50000);
+describe("return blogs added", () => {
+  test("blogs are returned as json", async () => {
+    await api
+      .get("/api/blogs")
+      .expect(200)
+      .expect("Content-Type", /application\/json/);
+  }, 50000);
 
-test("all blogs are returned", async () => {
-  const response = await api.get("/api/blogs");
-  expect(response.body).toHaveLength(helper.initialBlogs.length);
+  test("all blogs are returned", async () => {
+    const response = await api.get("/api/blogs");
+    expect(response.body).toHaveLength(helper.initialBlogs.length);
+  });
+
+  test("a valid blog can be added", async () => {
+    const newBlog = {
+      title: "Deep JS practices",
+      author: "Lydia Myles",
+      url: "https://graphjs.com",
+      likes: 18,
+    };
+
+    await api
+      .post("/api/blogs")
+      .send(newBlog)
+      .expect(201)
+      .expect("Content-Type", /application\/json/);
+    const blogsAtEnd = await helper.blogsInDb();
+    expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length + 1);
+  });
+
+  test("likes defaults to zero if not added", async () => {
+    const newBlog = {
+      title: "CSS design patterns",
+      author: "Colt Steele",
+      url: "https://colt.com",
+    };
+
+    await api
+      .post("/api/blogs")
+      .send(newBlog)
+      .expect(201)
+      .expect("Content-Type", /application\/json/);
+    const blogsAtEnd = await helper.blogsInDb();
+    expect(blogsAtEnd[blogsAtEnd.length - 1].likes).toBe(0);
+  });
+
+  test("blog without url is not added", async () => {
+    const newBlog = {
+      title: "Angular design patterns",
+      author: "Colt Steele",
+    };
+    await api.post("/api/blogs").send(newBlog).expect(400);
+    const blogsAtEnd = await helper.blogsInDb();
+    expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length);
+  });
+
+  test("blog without title is not added", async () => {
+    const newBlog = {
+      author: "Colt Steele",
+      url: "https://colt.com",
+    };
+    await api.post("/api/blogs").send(newBlog).expect(400);
+    const blogsAtEnd = await helper.blogsInDb();
+    expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length);
+  });
 });
 
-test("a valid blog can be added", async () => {
-  const newBlog = {
-    title: "Deep JS practices",
-    author: "Lydia Myles",
-    url: "https://graphjs.com",
-    likes: 18,
-  };
+describe("deletion of a blog", () => {
+  test("succeeds with status code of 204 if id is valid", async () => {
+    const blogsAtStart = await helper.blogsInDb();
+    const blogToDelete = blogsAtStart[1];
+    await api.delete(`/api/blogs/${blogToDelete.id}`);
 
-  await api
-    .post("/api/blogs")
-    .send(newBlog)
-    .expect(201)
-    .expect("Content-Type", /application\/json/);
-  const blogsAtEnd = await helper.blogsInDb();
-  expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length + 1);
+    const blogsAtEnd = await helper.blogsInDb();
+    expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length - 1);
+    const contents = blogsAtEnd.map((r) => r.title);
+    expect(contents).not.toContain(blogToDelete.title);
+  });
 });
 
-test("likes defaults to zero if not added", async () => {
-  const newBlog = {
-    title: "CSS design patterns",
-    author: "Colt Steele",
-    url: "https://colt.com",
-  };
+describe("updating existing blog", () => {
+  test("succeeds with updated data", async () => {
+    const blogsAtStart = await helper.blogsInDb();
+    const blogToUpdate = blogsAtStart[1];
+    const updatedBlog = {
+      likes: 51,
+    };
 
-  await api
-    .post("/api/blogs")
-    .send(newBlog)
-    .expect(201)
-    .expect("Content-Type", /application\/json/);
-  const blogsAtEnd = await helper.blogsInDb();
-  expect(blogsAtEnd[blogsAtEnd.length - 1].likes).toBe(0);
-});
-
-test("blog without url is not added", async () => {
-  const newBlog = {
-    title: "Angular design patterns",
-    author: "Colt Steele",
-  };
-  await api.post("/api/blogs").send(newBlog).expect(400);
-  const blogsAtEnd = await helper.blogsInDb();
-  expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length);
-});
-
-test("blog without title is not added", async () => {
-  const newBlog = {
-    author: "Colt Steele",
-    url: "https://colt.com",
-  };
-  await api.post("/api/blogs").send(newBlog).expect(400);
-  const blogsAtEnd = await helper.blogsInDb();
-  expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length);
+    await api
+      .put(`/api/blogs/${blogToUpdate.id}`)
+      .send(updatedBlog)
+      .expect(200)
+      .expect("Content-Type", /application\/json/);
+    const blogsAtEnd = await helper.blogsInDb();
+    expect(blogsAtEnd[1].likes).toBe(51);
+  });
 });
 
 afterAll(async () => {
