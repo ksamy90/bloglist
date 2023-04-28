@@ -193,6 +193,59 @@ test("all blogs are returned", async () => {
   expect(response.body).toHaveLength(helper.initialBlogs.length);
 });
 
+test("a valid blog can be added", async () => {
+  const newBlog = {
+    title: "Deep JS practices",
+    author: "Lydia Myles",
+    url: "https://graphjs.com",
+    likes: 18,
+  };
+
+  await api
+    .post("/api/blogs")
+    .send(newBlog)
+    .expect(201)
+    .expect("Content-Type", /application\/json/);
+  const blogsAtEnd = await helper.blogsInDb();
+  expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length + 1);
+});
+
+test("likes defaults to zero if not added", async () => {
+  const newBlog = {
+    title: "CSS design patterns",
+    author: "Colt Steele",
+    url: "https://colt.com",
+  };
+
+  await api
+    .post("/api/blogs")
+    .send(newBlog)
+    .expect(201)
+    .expect("Content-Type", /application\/json/);
+  const blogsAtEnd = await helper.blogsInDb();
+  expect(blogsAtEnd[blogsAtEnd.length - 1].likes).toBe(0);
+});
+
+test("blog without url is not added", async () => {
+  const newBlog = {
+    title: "Angular design patterns",
+    author: "Colt Steele",
+  };
+  await api.post("/api/blogs").send(newBlog).expect(400);
+  const blogsAtEnd = await helper.blogsInDb();
+  expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length);
+});
+
+test("blog without title is not added", async () => {
+  const newBlog = {
+    author: "Colt Steele",
+    url: "https://colt.com",
+  };
+  await api.post("/api/blogs").send(newBlog).expect(400);
+  const blogsAtEnd = await helper.blogsInDb();
+  expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length);
+});
+
 afterAll(async () => {
   await mongoose.connection.close();
 });
