@@ -219,9 +219,10 @@ describe("return blogs added", () => {
   });
 
   test("likes defaults to zero if not added", async () => {
+    const person = await User.findById(user._id);
     const newBlog = {
       title: "CSS design patterns",
-      author: "Colt Steele",
+      userId: person.id,
       url: "https://colt.com",
     };
 
@@ -235,9 +236,10 @@ describe("return blogs added", () => {
   });
 
   test("blog without url is not added", async () => {
+    const person = await User.findById(user._id);
     const newBlog = {
       title: "Angular design patterns",
-      author: "Colt Steele",
+      userId: person.id,
     };
     await api.post("/api/blogs").send(newBlog).expect(400);
     const blogsAtEnd = await helper.blogsInDb();
@@ -245,8 +247,9 @@ describe("return blogs added", () => {
   });
 
   test("blog without title is not added", async () => {
+    const person = await User.findById(user._id);
     const newBlog = {
-      author: "Colt Steele",
+      userId: person.id,
       url: "https://colt.com",
     };
     await api.post("/api/blogs").send(newBlog).expect(400);
