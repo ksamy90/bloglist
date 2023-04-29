@@ -1,15 +1,22 @@
 const { favoriteBlog, mostBlogs, mostLikes } = require("../utils/list_helper");
 const likesTotal = require("../utils/list_helper").totalLikes;
 const mongoose = require("mongoose");
+const bcrypt = require("bcrypt");
 const supertest = require("supertest");
 const app = require("../app");
 const helper = require("./test_helper");
 const Blog = require("../models/blog");
+const User = require("../models/user");
 
 const api = supertest(app);
 
+let user;
 beforeEach(async () => {
+  await User.deleteMany({});
   await Blog.deleteMany({});
+  const password = await bcrypt.hash("secret", 10);
+  user = new User({ username: "root", password });
+  await user.save();
   const blogObjects = helper.initialBlogs.map((blog) => new Blog(blog));
   const promiseArray = blogObjects.map((blog) => blog.save());
   await Promise.all(promiseArray);
@@ -195,11 +202,11 @@ describe("return blogs added", () => {
   });
 
   test("a valid blog can be added", async () => {
+    const person = await User.findById(user._id);
     const newBlog = {
       title: "Deep JS practices",
-      author: "Lydia Myles",
+      userId: person.id,
       url: "https://graphjs.com",
-      likes: 18,
     };
 
     await api
