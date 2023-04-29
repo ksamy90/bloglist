@@ -251,7 +251,7 @@ describe("return blogs added", () => {
 describe("deletion of a blog", () => {
   test("succeeds with status code of 204 if id is valid", async () => {
     const blogsAtStart = await helper.blogsInDb();
-    const blogToDelete = blogsAtStart[1];
+    const blogToDelete = blogsAtStart[0];
     await api.delete(`/api/blogs/${blogToDelete.id}`);
 
     const blogsAtEnd = await helper.blogsInDb();
@@ -264,9 +264,11 @@ describe("deletion of a blog", () => {
 describe("updating existing blog", () => {
   test("succeeds with updated data", async () => {
     const blogsAtStart = await helper.blogsInDb();
-    const blogToUpdate = blogsAtStart[1];
+    const blogToUpdate = blogsAtStart[0];
     const updatedBlog = {
       likes: 51,
+      author: "Kyle Simpson",
+      url: "http://getify.com",
     };
 
     await api
@@ -275,7 +277,7 @@ describe("updating existing blog", () => {
       .expect(200)
       .expect("Content-Type", /application\/json/);
     const blogsAtEnd = await helper.blogsInDb();
-    expect(blogsAtEnd[1].likes).toBe(51);
+    expect(blogsAtEnd[0].likes).toBe(51);
   });
 });
 
